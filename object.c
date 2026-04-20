@@ -119,6 +119,47 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
         free(obj);
         return 0;
     }
+
+    char final_path[512];
+    object_path(&id, final_path, sizeof(final_path));
+
+    char dir_path[512];
+    snprintf(dir_path, sizeof(dir_path), "%s", final_path);
+    char *slash = strrchr(dir_path, '/');
+    if (!slash) {
+        free(obj);
+        return -1;
+    }
+    *slash = '\0';
+
+    if (mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
+        free(obj);
+        return -1;
+    }
+
+    char tmp_template[640];
+    int tmp_n = snprintf(tmp_template, sizeof(tmp_template), "%s/.tmp_obj_XXXXXX", dir_path);
+    if (tmp_n < 0 || (size_t)tmp_n >= sizeof(tmp_template)) {
+        free(obj);
+        return -1;
+    }
+    int fd = mkstemp(tmp_template);
+    if (fd < 0) {
+        free(obj);
+        return -1;
+    }
+
+    size_t written = 0;
+    while (written < obj_len) {
+        ssize_t n = write(fd, obj + written, obj_len - written);
+        if (n <= 0) {
+            close(fd);
+            unlink(tmp_template);
+            free(obj);
+            return -1;
+        }
+        written += (size_t)n;
+    }
 }
 
 // Read an object from the store.
