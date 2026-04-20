@@ -515,11 +515,12 @@ You can also run the full integration test:
 make test-integration
 ```
 
-**📸 Screenshot 4A:** Output of `./pes log` showing three commits with hashes, authors, timestamps, and messages.
+![Screenshot 4a](https://github.com/user-attachments/assets/9b6dbd7e-16d3-4399-9432-450f4e6ab3a0)
 
-**📸 Screenshot 4B:** `find .pes -type f | sort` showing object store growth after three commits.
+![Screenshot 4b](https://github.com/user-attachments/assets/0eec6ff7-16fd-404b-b287-dcd6fa884323)
 
-**📸 Screenshot 4C:** `cat .pes/refs/heads/main` and `cat .pes/HEAD` showing the reference chain.
+![Screenshot 4c](https://github.com/user-attachments/assets/c9db3d3a-10ae-484d-9825-8759146de608)
+
 
 ---
 
@@ -662,3 +663,8 @@ Git avoids this with multiple protections:
 - **Git Internals** (Pro Git book): https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain
 - **Git from the inside out**: https://codewords.recurse.com/issues/two/git-from-the-inside-out
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
+
+
+<img width="723" height="92" alt="Screenshot 2026-04-20 160728" src="https://github.com/user-attachments/assets/9fc08754-92dc-4c62-a7d7-6c977d0ac6e3" />
+<img width="847" height="299" alt="Screenshot 2026-04-20 160709" src="https://github.com/user-attachments/assets/c5552785-bd6d-476f-9790-33dda66ef25d" />
+
