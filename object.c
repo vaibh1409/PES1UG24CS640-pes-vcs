@@ -160,6 +160,34 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
         }
         written += (size_t)n;
     }
+
+    if (fsync(fd) != 0) {
+        close(fd);
+        unlink(tmp_template);
+        free(obj);
+        return -1;
+    }
+
+    if (close(fd) != 0) {
+        unlink(tmp_template);
+        free(obj);
+        return -1;
+    }
+
+    if (rename(tmp_template, final_path) != 0) {
+        unlink(tmp_template);
+        free(obj);
+        return -1;
+    }
+
+    int dir_fd = open(dir_path, O_RDONLY | O_DIRECTORY);
+    if (dir_fd >= 0) {
+        fsync(dir_fd);
+        close(dir_fd);
+    }
+
+    free(obj);
+    return 0;
 }
 
 // Read an object from the store.
@@ -185,7 +213,37 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 // The caller is responsible for calling free(*data_out).
 // Returns 0 on success, -1 on error (file not found, corrupt, etc.).
 int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
-    // TODO: Implement
-    (void)id; (void)type_out; (void)data_out; (void)len_out;
-    return -1;
+    int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
+    char path[512];
+    object_path(id, path, sizeof(path));
+
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+
+    if (fseek(f, 0, SEEK_END) != 0) {
+        fclose(f);
+        return -1;
+    }
+    long file_size = ftell(f);
+    if (file_size < 0) {
+        fclose(f);
+        return -1;
+    }
+    if (fseek(f, 0, SEEK_SET) != 0) {
+        fclose(f);
+        return -1;
+    }
+
+    uint8_t *buf = malloc((size_t)file_size);
+    if (!buf) {
+        fclose(f);
+        return -1;
+    }
+
+    size_t nread = fread(buf, 1, (size_t)file_size, f);
+    fclose(f);
+    if (nread != (size_t)file_size) {
+        free(buf);
+        return -1;
+    }
 }
