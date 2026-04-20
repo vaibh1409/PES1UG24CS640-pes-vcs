@@ -199,6 +199,11 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
     Commit commit;
     memset(&commit, 0, sizeof(commit));
 
+    if (tree_from_index(&commit.tree) != 0) return -1;
+
+    commit.has_parent = (head_read(&commit.parent) == 0) ? 1 : 0;
+    snprintf(commit.author, sizeof(commit.author), "%s", pes_author());
+
     if (head_update(commit_id_out) != 0) return -1;
     return 0;
 }
