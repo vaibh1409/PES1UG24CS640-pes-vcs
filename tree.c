@@ -190,5 +190,13 @@ int tree_from_index(ObjectID *id_out) {
                 snprintf(te->name, sizeof(te->name), "%s", dir_name);
             }
         }
+        
+        void *raw = NULL;
+        size_t raw_len = 0;
+        if (tree_serialize(&tree, &raw, &raw_len) != 0) return -1;
+        int rc = object_write(OBJ_TREE, raw, raw_len, out_id);
+        free(raw);
+        return rc;
+    }
 
 }
