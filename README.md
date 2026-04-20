@@ -374,11 +374,9 @@ The test program verifies:
 - Deduplication (same content → same hash → stored once)
 - Integrity checking (detects corrupted objects)
 
-**📸 Screenshot 1A:** Output of `./test_objects` showing all tests passing.
+![Screenshot 1a](https://github.com/user-attachments/assets/7444555d-81b8-4e2b-aae6-2a005fe2422a)
 
-**📸 Screenshot 1B:** `find .pes/objects -type f` showing the sharded directory structure.
-
----
+![Screenshot 1b](https://github.com/user-attachments/assets/cd355d72-0f09-4b13-b6de-c6c3854c925f)
 
 ## Phase 2: Tree Objects
 
@@ -406,11 +404,9 @@ The test program verifies:
 - Serialize → parse roundtrip preserves entries, modes, and hashes
 - Deterministic serialization (same entries in any order → identical output)
 
-**📸 Screenshot 2A:** Output of `./test_tree` showing all tests passing.
+![Screenshot 2a](https://github.com/user-attachments/assets/a2284a3a-45cb-4e69-9df2-5a84e9ed4a08) 
 
-**📸 Screenshot 2B:** Pick a tree object from `find .pes/objects -type f` and run `xxd .pes/objects/XX/YYY... | head -20` to show the raw binary format.
-
----
+![Screenshot 2b](https://github.com/user-attachments/assets/fe47ce23-5e3d-4ae9-b93d-eef54e98ba00)
 
 ## Phase 3: The Index (Staging Area)
 
@@ -663,5 +659,6 @@ Git avoids this with multiple protections:
 - **Git Internals** (Pro Git book): https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain
 - **Git from the inside out**: https://codewords.recurse.com/issues/two/git-from-the-inside-out
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
+
 
 
