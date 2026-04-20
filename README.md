@@ -464,9 +464,9 @@ echo "world" > file2.txt
 cat .pes/index    # Human-readable text format
 ```
 
-**📸 Screenshot 3A:** Run `./pes init`, `./pes add file1.txt file2.txt`, `./pes status` — show the output.
+![Screenshot 3a](https://github.com/user-attachments/assets/9889c11e-19a3-4c39-ae38-f13189605e89)
 
-**📸 Screenshot 3B:** `cat .pes/index` showing the text-format index with your entries.
+![Screenshot 3b](https://github.com/user-attachments/assets/4d63a693-7a0a-405d-b0b6-ce559f716a0c)
 
 ---
 
@@ -515,11 +515,11 @@ You can also run the full integration test:
 make test-integration
 ```
 
-![Screenshot 4a](https://github.com/user-attachments/assets/9b6dbd7e-16d3-4399-9432-450f4e6ab3a0)
+![Screenshot 4a](https://github.com/user-attachments/assets/2e46015b-ae53-4f75-bed2-bf7bd7af2e15)
 
-![Screenshot 4b](https://github.com/user-attachments/assets/0eec6ff7-16fd-404b-b287-dcd6fa884323)
+![Screenshot 4b](https://github.com/user-attachments/assets/c5552785-bd6d-476f-9790-33dda66ef25d)
 
-![Screenshot 4c](https://github.com/user-attachments/assets/c9db3d3a-10ae-484d-9825-8759146de608)
+![Screenshot 4c](https://github.com/user-attachments/assets/9fc08754-92dc-4c62-a7d7-6c977d0ac6e3)
 
 
 ---
@@ -664,7 +664,4 @@ Git avoids this with multiple protections:
 - **Git from the inside out**: https://codewords.recurse.com/issues/two/git-from-the-inside-out
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
 
-
-<img width="723" height="92" alt="Screenshot 2026-04-20 160728" src="https://github.com/user-attachments/assets/9fc08754-92dc-4c62-a7d7-6c977d0ac6e3" />
-<img width="847" height="299" alt="Screenshot 2026-04-20 160709" src="https://github.com/user-attachments/assets/c5552785-bd6d-476f-9790-33dda66ef25d" />
 
