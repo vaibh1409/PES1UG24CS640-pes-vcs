@@ -190,7 +190,7 @@ int tree_from_index(ObjectID *id_out) {
                 snprintf(te->name, sizeof(te->name), "%s", dir_name);
             }
         }
-        
+
         void *raw = NULL;
         size_t raw_len = 0;
         if (tree_serialize(&tree, &raw, &raw_len) != 0) return -1;
@@ -198,7 +198,7 @@ int tree_from_index(ObjectID *id_out) {
         free(raw);
         return rc;
     }
-    
+
     Index index;
     index.count = 0;
     FILE *f = fopen(INDEX_FILE, "r");
@@ -228,5 +228,8 @@ int tree_from_index(ObjectID *id_out) {
         snprintf(e->path, sizeof(e->path), "%s", path);
         index.count++;
     }
+    fclose(f);
 
+    qsort(index.entries, index.count, sizeof(IndexEntry), cmp_index_entries);
+    return build_level(&index, "", id_out);
 }
