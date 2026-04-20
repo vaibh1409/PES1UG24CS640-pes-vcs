@@ -541,6 +541,68 @@ The following questions cover filesystem concepts beyond the implementation scop
 
 **Q6.2:** Why is it dangerous to run garbage collection concurrently with a commit operation? Describe a race condition where GC could delete an object that a concurrent commit is about to reference. How does Git's real GC avoid this?
 
+### Analysis Answers
+
+#### Q5.1
+To implement `pes checkout <branch>`, I would do the following:
+- Verify `.pes/refs/heads/<branch>` exists and read its commit hash.
+- Update `.pes/HEAD` to `ref: refs/heads/<branch>` (unless supporting detached checkout explicitly).
+- Resolve the target commit, read its root tree, and materialize that snapshot in the working directory:
+  - Create missing directories.
+  - Write tracked files from blob contents.
+  - Remove tracked files/directories that are not present in the target tree.
+- Rebuild `.pes/index` so it matches the checked-out tree (hash, mode, size, mtime metadata for tracked files).
+
+The complexity comes from safe working-directory transitions: conflict detection, recursive tree expansion, path deletions, permission bits, and atomicity guarantees so a crash does not leave index/HEAD/working-tree inconsistent.
+
+#### Q5.2
+Dirty-check detection can be done with index + object store only:
+- Read current HEAD commit and target branch commit.
+- Expand both trees into path→blob-hash maps (and modes).
+- For each path tracked in index:
+  - Compare working file metadata (`stat`) with index metadata (`mtime`, `size`).
+  - If metadata changed, hash the working file and compare to index hash to confirm real content change.
+- A checkout conflict exists if:
+  1. File is dirty relative to index, and
+  2. The file content/mode differs between current HEAD tree and target tree.
+
+If both are true, refuse checkout for safety because switching would overwrite uncommitted local work.
+
+#### Q5.3
+In detached HEAD, `HEAD` stores a commit hash directly, not a branch ref. New commits still work, but they advance only `HEAD` (no branch name moves), so those commits become easy to lose once HEAD is moved away.
+
+Recovery options:
+- Immediately create a branch at that commit (`refs/heads/<new-branch> = <commit-hash>`).
+- Or copy the hash from logs/reflog-like history and create a branch later.
+- As long as GC has not deleted those unreachable commits, they remain recoverable by hash.
+
+#### Q6.1
+Mark-and-sweep GC algorithm:
+1. **Roots:** all branch heads in `.pes/refs/heads/*` (and optionally HEAD if detached, tags if supported).
+2. **Mark reachable objects:**
+   - Traverse commit graph from each root using parent links.
+   - For each commit, mark its tree.
+   - Recursively walk trees; mark subtree/tree objects and blob objects.
+3. **Sweep:**
+   - Enumerate all object files in `.pes/objects`.
+   - Delete objects not in the reachable set.
+
+Best data structure: hash set of 32-byte object IDs (or 64-char hex IDs) for O(1) average membership checks.
+
+For 100,000 commits and 50 branches, commit traversal is typically close to 100,000 unique commits (branches overlap heavily). Total visited objects are commits + all reachable trees + blobs. In a medium repository this is often a few hundred thousand to a few million objects.
+
+#### Q6.2
+Concurrent GC is dangerous because of a race:
+- Commit process writes new blob/tree objects first.
+- Before it writes the final commit and updates branch ref, those objects are temporarily unreachable from refs.
+- GC runs during that window, sees those objects as unreachable, and deletes them.
+- Commit then writes/updates refs to objects that no longer exist, corrupting history.
+
+Git avoids this with multiple protections:
+- Objects are first written as loose/temp files and made visible atomically.
+- GC uses conservative reachability rules and grace periods via reflogs/prune windows.
+- During packing/maintenance, Git relies on lockfiles and coordination to avoid deleting objects that may be referenced by in-flight operations.
+
 ---
 
 ## Submission Checklist
