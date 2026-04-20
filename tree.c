@@ -198,5 +198,17 @@ int tree_from_index(ObjectID *id_out) {
         free(raw);
         return rc;
     }
+    
+    Index index;
+    index.count = 0;
+    FILE *f = fopen(INDEX_FILE, "r");
+    if (!f) return -1;
+    char line[2048];
+    while (fgets(line, sizeof(line), f)) {
+        if (index.count >= MAX_INDEX_ENTRIES) {
+            fclose(f);
+            return -1;
+        }
+
 
 }
