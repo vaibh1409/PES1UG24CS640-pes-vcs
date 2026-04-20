@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <openssl/evp.h>
 
 // ─── PROVIDED ────────────────────────────────────────────────────────────────
@@ -213,7 +214,6 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 // The caller is responsible for calling free(*data_out).
 // Returns 0 on success, -1 on error (file not found, corrupt, etc.).
 int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
-    int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
     char path[512];
     object_path(id, path, sizeof(path));
 
@@ -276,5 +276,33 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
         return -1;
     }
 
-    
+    ObjectType type;
+    if (strcmp(type_str, "blob") == 0) type = OBJ_BLOB;
+    else if (strcmp(type_str, "tree") == 0) type = OBJ_TREE;
+    else if (strcmp(type_str, "commit") == 0) type = OBJ_COMMIT;
+    else {
+        free(buf);
+        return -1;
+    }
+
+    size_t payload_len = (size_t)file_size - header_len - 1;
+    if (payload_len != declared_size) {
+        free(buf);
+        return -1;
+    }
+
+    uint8_t *payload = malloc(payload_len + 1);
+    if (!payload) {
+        free(buf);
+        return -1;
+    }
+    if (payload_len > 0) memcpy(payload, null_byte + 1, payload_len);
+    payload[payload_len] = '\0';
+
+    *type_out = type;
+    *data_out = payload;
+    *len_out = payload_len;
+
+    free(buf);
+    return 0;
 }
