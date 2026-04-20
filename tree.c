@@ -177,4 +177,18 @@ int tree_from_index(ObjectID *id_out) {
                 }
                 if (exists) continue;
 
+                char child_prefix[768];
+                snprintf(child_prefix, sizeof(child_prefix), "%s%s/", prefix, dir_name);
+
+                ObjectID child_id;
+                if (build_level(index, child_prefix, &child_id) != 0) return -1;
+
+                if (tree.count >= MAX_TREE_ENTRIES) return -1;
+                TreeEntry *te = &tree.entries[tree.count++];
+                te->mode = MODE_DIR;
+                te->hash = child_id;
+                snprintf(te->name, sizeof(te->name), "%s", dir_name);
+            }
+        }
+
 }
