@@ -24,6 +24,9 @@
 #include <unistd.h>
 #include <dirent.h>
 
+// Forward declaration (implemented in object.c)
+int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out);
+
 // ─── PROVIDED ────────────────────────────────────────────────────────────────
 
 // Find an index entry by path (linear scan).
@@ -282,4 +285,40 @@ int index_add(Index *index, const char *path) {
         fclose(f);
         return -1;
     }
+
+    void *data = malloc((size_t)file_size > 0 ? (size_t)file_size : 1);
+    if (!data) {
+        fclose(f);
+        return -1;
+    }
+
+    size_t nread = fread(data, 1, (size_t)file_size, f);
+    fclose(f);
+    if (nread != (size_t)file_size) {
+        free(data);
+        return -1;
+    }
+
+    ObjectID blob_id;
+    if (object_write(OBJ_BLOB, data, (size_t)file_size, &blob_id) != 0) {
+        free(data);
+        return -1;
+    }
+    free(data);
+
+    IndexEntry *entry = index_find(index, path);
+    if (!entry) {
+        if (index->count >= MAX_INDEX_ENTRIES) return -1;
+        entry = &index->entries[index->count++];
+    }
+
+    entry->mode = (st.st_mode & S_IXUSR) ? 0100755 : 0100644;
+    entry->hash = blob_id;
+    entry->mtime_sec = (uint64_t)st.st_mtime;
+    entry->size = (uint32_t)st.st_size;
+    snprintf(entry->path, sizeof(entry->path), "%s", path);
+
+    if (index_save(index) != 0) return -1;
+    printf("added: %s\n", path);
+    return 0;
 }
