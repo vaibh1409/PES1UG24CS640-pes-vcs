@@ -246,4 +246,35 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
         free(buf);
         return -1;
     }
+
+    ObjectID actual;
+    compute_hash(buf, (size_t)file_size, &actual);
+    if (memcmp(actual.hash, id->hash, HASH_SIZE) != 0) {
+        free(buf);
+        return -1;
+    }
+
+    uint8_t *null_byte = memchr(buf, '\0', (size_t)file_size);
+    if (!null_byte) {
+        free(buf);
+        return -1;
+    }
+
+    size_t header_len = (size_t)(null_byte - buf);
+    if (header_len >= 64) {
+        free(buf);
+        return -1;
+    }
+    char header[64];
+    memcpy(header, buf, header_len);
+    header[header_len] = '\0';
+
+    char type_str[16];
+    size_t declared_size = 0;
+    if (sscanf(header, "%15s %zu", type_str, &declared_size) != 2) {
+        free(buf);
+        return -1;
+    }
+
+    
 }
